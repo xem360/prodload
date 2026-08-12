@@ -15,6 +15,7 @@
       --text-dim: #b0b0b0;
       --danger: #cf6679;
       --success: #03dac6;
+      --warning: #ffb74d;
     }
 
     body {
@@ -26,7 +27,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 950px;
       margin: 0 auto;
     }
 
@@ -82,6 +83,12 @@
       border: none;
     }
 
+    button.btn-warning {
+      background-color: var(--warning);
+      color: #000;
+      border: none;
+    }
+
     button.btn-primary {
       background-color: var(--accent);
       color: #000;
@@ -109,6 +116,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 15px;
+      flex-wrap: wrap;
     }
 
     .cue-card.active {
@@ -116,7 +124,7 @@
       background-color: #252a2e;
     }
 
-    .cue-info { flex-grow: 1; }
+    .cue-info { flex-grow: 1; min-width: 150px; }
 
     .cue-number {
       font-weight: bold;
@@ -127,10 +135,20 @@
     .cue-controls {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    input[type="range"] { width: 90px; }
+    select.hotkey-select {
+      background: #2a2a2a;
+      color: var(--text);
+      border: 1px solid #444;
+      padding: 6px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    input[type="range"] { width: 80px; }
 
     .upload-zone {
       border: 2px dashed #444;
@@ -186,6 +204,7 @@
     </div>
     <div class="master-controls">
       <button class="btn-primary" onclick="playCurrentCue()">GO (Space)</button>
+      <button class="btn-warning" onclick="fadeAll()">FADE ALL</button>
       <button class="btn-danger" onclick="stopAll()">PANIC / STOP ALL</button>
     </div>
   </header>
@@ -213,9 +232,9 @@
   <div class="modal">
     <h2>✨ What's New in Prodload</h2>
     <ul>
-      <li><strong>Official Rebrand:</strong> The system is now officially named <strong>Prodload</strong>.</li>
+      <li><strong>Fade Out Controls:</strong> Added individual and master fade-out buttons to smoothly lower volume and stop playing sound effects.</li>
+      <li><strong>Number Key Mapping:</strong> Map number keys (0–9) to specific sound cues for instant hotkey playback.</li>
       <li><strong>Custom Archive Format:</strong> Projects save directly as <code>.prodload</code> files, containing all sound data and queue configurations in one self-contained bundle.</li>
-      <li><strong>Standalone Offline Engine:</strong> Works completely local inside your browser without external audio servers.</li>
       <li><strong>Spacebar GO Trigger:</strong> Instant keybinding to trigger sequential sound cues during live performances.</li>
     </ul>
     <button class="modal-close btn-primary" onclick="toggleWhatsNew()">Close</button>
@@ -225,6 +244,7 @@
 <script>
   let cues = [];
   let currentCueIndex = 0;
+  const fadeIntervals = {};
 
   const fileInput = document.getElementById('fileInput');
   const cueListEl = document.getElementById('cueList');
@@ -246,7 +266,8 @@
         fileName: file.name,
         fileBlob: file,
         audio: new Audio(URL.createObjectURL(file)),
-        volume: 1
+        volume: 1,
+        hotkey: ''
       };
       
       cues.push(cue);
@@ -266,16 +287,26 @@
       const card = document.createElement('div');
       card.className = `cue-card ${index === currentCueIndex ? 'active' : ''}`;
       
+      let hotkeyOptions = `<option value="">Key</option>`;
+      for (let i = 0; i <= 9; i++) {
+        const selected = cue.hotkey === String(i) ? 'selected' : '';
+        hotkeyOptions += `<option value="${i}" ${selected}>Key ${i}</option>`;
+      }
+
       card.innerHTML = `
         <div class="cue-info">
           <span class="cue-number">${cue.number}</span>
           <strong class="cue-name">${cue.name}</strong>
         </div>
         <div class="cue-controls">
+          <select class="hotkey-select" onchange="setHotkey(${index}, this.value)">
+            ${hotkeyOptions}
+          </select>
           <label>Vol:</label>
           <input type="range" min="0" max="1" step="0.05" value="${cue.volume}" 
             onchange="updateVolume(${index}, this.value)">
           <button onclick="playCue(${index})">Play</button>
+          <button class="btn-warning" onclick="fadeCue(${index})">Fade</button>
           <button onclick="stopCue(${index})">Stop</button>
           <button onclick="removeCue(${index})" style="color: var(--danger)">✕</button>
         </div>
@@ -285,8 +316,18 @@
     });
   }
 
+  function setHotkey(index, val) {
+    if (cues[index]) {
+      cues[index].hotkey = val;
+    }
+  }
+
   function playCue(index) {
     if (cues[index]) {
+      if (fadeIntervals[index]) {
+        clearInterval(fadeIntervals[index]);
+        delete fadeIntervals[index];
+      }
       cues[index].audio.currentTime = 0;
       cues[index].audio.volume = cues[index].volume;
       cues[index].audio.play();
@@ -295,10 +336,45 @@
     }
   }
 
+  function fadeCue(index, duration = 2000) {
+    if (cues[index] && !cues[index].audio.paused) {
+      if (fadeIntervals[index]) {
+        clearInterval(fadeIntervals[index]);
+      }
+      const audio = cues[index].audio;
+      const initialVolume = audio.volume;
+      const stepTime = 50;
+      const steps = duration / stepTime;
+      const volumeStep = initialVolume / steps;
+
+      fadeIntervals[index] = setInterval(() => {
+        if (audio.volume > volumeStep) {
+          audio.volume -= volumeStep;
+        } else {
+          audio.volume = 0;
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = cues[index].volume;
+          clearInterval(fadeIntervals[index]);
+          delete fadeIntervals[index];
+        }
+      }, stepTime);
+    }
+  }
+
+  function fadeAll() {
+    cues.forEach((_, index) => fadeCue(index));
+  }
+
   function stopCue(index) {
     if (cues[index]) {
+      if (fadeIntervals[index]) {
+        clearInterval(fadeIntervals[index]);
+        delete fadeIntervals[index];
+      }
       cues[index].audio.pause();
       cues[index].audio.currentTime = 0;
+      cues[index].audio.volume = cues[index].volume;
     }
   }
 
@@ -313,16 +389,23 @@
   }
 
   function stopAll() {
-    cues.forEach(cue => {
+    cues.forEach((cue, index) => {
+      if (fadeIntervals[index]) {
+        clearInterval(fadeIntervals[index]);
+        delete fadeIntervals[index];
+      }
       cue.audio.pause();
       cue.audio.currentTime = 0;
+      cue.audio.volume = cue.volume;
     });
   }
 
   function updateVolume(index, val) {
     if (cues[index]) {
       cues[index].volume = parseFloat(val);
-      cues[index].audio.volume = parseFloat(val);
+      if (!fadeIntervals[index]) {
+        cues[index].audio.volume = parseFloat(val);
+      }
     }
   }
 
@@ -357,7 +440,8 @@
         name: cue.name,
         fileName: cue.fileName,
         audioPath: audioPath,
-        volume: cue.volume
+        volume: cue.volume,
+        hotkey: cue.hotkey || ''
       });
     }
 
@@ -404,7 +488,8 @@
             fileName: item.fileName,
             fileBlob: audioBlob,
             audio: new Audio(URL.createObjectURL(audioBlob)),
-            volume: item.volume
+            volume: item.volume,
+            hotkey: item.hotkey || ''
           });
         }
       }
@@ -422,9 +507,20 @@
   }
 
   document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+    if (e.code === 'Space') {
       e.preventDefault();
       playCurrentCue();
+      return;
+    }
+
+    if (e.key >= '0' && e.key <= '9') {
+      const targetIndex = cues.findIndex(c => c.hotkey === e.key);
+      if (targetIndex !== -1) {
+        e.preventDefault();
+        playCue(targetIndex);
+      }
     }
   });
 </script>
