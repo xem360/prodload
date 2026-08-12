@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prodload</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --accent: #bb86fc;
+      --active-cue: #03dac6;
+      --text: #ffffff;
+      --text-dim: #b0b0b0;
+      --danger: #cf6679;
+      --success: #03dac6;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #333;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    h1 { margin: 0; font-size: 1.8rem; }
+
+    .top-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: #181818;
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: 1px solid #2a2a2a;
+    }
+
+    .project-actions, .master-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      background-color: var(--card-bg);
+      color: var(--text);
+      border: 1px solid #444;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    button:hover { background-color: #333; }
+
+    button.btn-danger {
+      background-color: var(--danger);
+      color: #000;
+      border: none;
+    }
+
+    button.btn-primary {
+      background-color: var(--accent);
+      color: #000;
+      border: none;
+    }
+
+    button.btn-save {
+      background-color: #2e7d32;
+      color: #fff;
+      border: none;
+    }
+
+    .cue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cue-card {
+      background-color: var(--card-bg);
+      border-left: 5px solid #444;
+      padding: 15px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .cue-card.active {
+      border-left-color: var(--active-cue);
+      background-color: #252a2e;
+    }
+
+    .cue-info { flex-grow: 1; }
+
+    .cue-number {
+      font-weight: bold;
+      color: var(--accent);
+      margin-right: 10px;
+    }
+
+    .cue-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="range"] { width: 90px; }
+
+    .upload-zone {
+      border: 2px dashed #444;
+      padding: 20px;
+      text-align: center;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .upload-zone input { display: none; }
+    .upload-zone label { cursor: pointer; color: var(--accent); text-decoration: underline; }
+    #loadProjectInput { display: none; }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+      border: 1px solid #444;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .modal h2 { margin-top: 0; color: var(--accent); }
+    .modal ul { padding-left: 20px; line-height: 1.6; }
+    .modal-close {
+      margin-top: 20px;
+      float: right;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">
+      <h1>🎭 Prodload</h1>
+      <button onclick="toggleWhatsNew()">✨ What's New</button>
+    </div>
+    <div class="master-controls">
+      <button class="btn-primary" onclick="playCurrentCue()">GO (Space)</button>
+      <button class="btn-danger" onclick="stopAll()">PANIC / STOP ALL</button>
+    </div>
+  </header>
+
+  <div class="top-toolbar">
+    <div class="project-actions">
+      <button class="btn-save" onclick="saveProject()">💾 Save .prodload</button>
+      <button onclick="document.getElementById('loadProjectInput').click()">📂 Open .prodload</button>
+      <input type="file" id="loadProjectInput" accept=".prodload,.zip" onchange="loadProject(this.files[0])">
+    </div>
+    <div style="align-self: center; color: var(--text-dim); font-size: 0.9rem;" id="statusText">
+      Ready
+    </div>
+  </div>
+
+  <div class="upload-zone">
+    <p>Add sounds to show: Drag & drop audio files here or <label for="fileInput">browse files</label></p>
+    <input type="file" id="fileInput" multiple accept="audio/*">
+  </div>
+
+  <div class="cue-list" id="cueList"></div>
+</div>
+
+<div class="modal-overlay" id="whatsNewModal">
+  <div class="modal">
+    <h2>✨ What's New in Prodload</h2>
+    <ul>
+      <li><strong>Official Rebrand:</strong> The system is now officially named <strong>Prodload</strong>.</li>
+      <li><strong>Custom Archive Format:</strong> Projects save directly as <code>.prodload</code> files, containing all sound data and queue configurations in one self-contained bundle.</li>
+      <li><strong>Standalone Offline Engine:</strong> Works completely local inside your browser without external audio servers.</li>
+      <li><strong>Spacebar GO Trigger:</strong> Instant keybinding to trigger sequential sound cues during live performances.</li>
+    </ul>
+    <button class="modal-close btn-primary" onclick="toggleWhatsNew()">Close</button>
+  </div>
+</div>
+
+<script>
+  let cues = [];
+  let currentCueIndex = 0;
+
+  const fileInput = document.getElementById('fileInput');
+  const cueListEl = document.getElementById('cueList');
+  const statusText = document.getElementById('statusText');
+
+  fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+  function toggleWhatsNew() {
+    const modal = document.getElementById('whatsNewModal');
+    modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+  }
+
+  function handleFiles(files) {
+    Array.from(files).forEach((file) => {
+      const cue = {
+        id: Date.now() + Math.random(),
+        number: `Q${cues.length + 1}`,
+        name: file.name.replace(/\.[^/.]+$/, ""),
+        fileName: file.name,
+        fileBlob: file,
+        audio: new Audio(URL.createObjectURL(file)),
+        volume: 1
+      };
+      
+      cues.push(cue);
+    });
+    renderCues();
+  }
+
+  function renderCues() {
+    cueListEl.innerHTML = '';
+    
+    if (cues.length === 0) {
+      cueListEl.innerHTML = '<p style="text-align:center; color: var(--text-dim);">No cues added yet. Upload audio or load a .prodload project file.</p>';
+      return;
+    }
+
+    cues.forEach((cue, index) => {
+      const card = document.createElement('div');
+      card.className = `cue-card ${index === currentCueIndex ? 'active' : ''}`;
+      
+      card.innerHTML = `
+        <div class="cue-info">
+          <span class="cue-number">${cue.number}</span>
+          <strong class="cue-name">${cue.name}</strong>
+        </div>
+        <div class="cue-controls">
+          <label>Vol:</label>
+          <input type="range" min="0" max="1" step="0.05" value="${cue.volume}" 
+            onchange="updateVolume(${index}, this.value)">
+          <button onclick="playCue(${index})">Play</button>
+          <button onclick="stopCue(${index})">Stop</button>
+          <button onclick="removeCue(${index})" style="color: var(--danger)">✕</button>
+        </div>
+      `;
+      
+      cueListEl.appendChild(card);
+    });
+  }
+
+  function playCue(index) {
+    if (cues[index]) {
+      cues[index].audio.currentTime = 0;
+      cues[index].audio.volume = cues[index].volume;
+      cues[index].audio.play();
+      currentCueIndex = index;
+      renderCues();
+    }
+  }
+
+  function stopCue(index) {
+    if (cues[index]) {
+      cues[index].audio.pause();
+      cues[index].audio.currentTime = 0;
+    }
+  }
+
+  function playCurrentCue() {
+    if (cues.length > 0 && currentCueIndex < cues.length) {
+      playCue(currentCueIndex);
+      if (currentCueIndex < cues.length - 1) {
+        currentCueIndex++;
+        setTimeout(renderCues, 100);
+      }
+    }
+  }
+
+  function stopAll() {
+    cues.forEach(cue => {
+      cue.audio.pause();
+      cue.audio.currentTime = 0;
+    });
+  }
+
+  function updateVolume(index, val) {
+    if (cues[index]) {
+      cues[index].volume = parseFloat(val);
+      cues[index].audio.volume = parseFloat(val);
+    }
+  }
+
+  function removeCue(index) {
+    stopCue(index);
+    cues.splice(index, 1);
+    if (currentCueIndex >= cues.length) {
+      currentCueIndex = Math.max(0, cues.length - 1);
+    }
+    renderCues();
+  }
+
+  async function saveProject() {
+    if (cues.length === 0) {
+      alert("Please add at least one cue before saving.");
+      return;
+    }
+
+    statusText.innerText = "Bundling .prodload archive...";
+    const zip = new JSZip();
+    const metadata = [];
+
+    for (let i = 0; i < cues.length; i++) {
+      const cue = cues[i];
+      const audioPath = `audio/cue_${i}_${cue.fileName}`;
+      
+      zip.file(audioPath, cue.fileBlob);
+
+      metadata.push({
+        id: cue.id,
+        number: cue.number,
+        name: cue.name,
+        fileName: cue.fileName,
+        audioPath: audioPath,
+        volume: cue.volume
+      });
+    }
+
+    zip.file("project.json", JSON.stringify({ cues: metadata }, null, 2));
+
+    const content = await zip.generateAsync({ type: "blob" });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(content);
+    link.download = `show_cues_${Date.now()}.prodload`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+
+    statusText.innerText = "Project saved!";
+    setTimeout(() => { statusText.innerText = "Ready"; }, 3000);
+  }
+
+  async function loadProject(file) {
+    if (!file) return;
+
+    statusText.innerText = "Unpacking .prodload...";
+    stopAll();
+    cues = [];
+
+    try {
+      const zip = await JSZip.loadAsync(file);
+      const metadataFile = zip.file("project.json");
+      
+      if (!metadataFile) {
+        throw new Error("Invalid .prodload file (missing project.json).");
+      }
+
+      const metadataText = await metadataFile.async("text");
+      const projectData = JSON.parse(metadataText);
+
+      for (const item of projectData.cues) {
+        const audioFile = zip.file(item.audioPath);
+        if (audioFile) {
+          const audioBlob = await audioFile.async("blob");
+          
+          cues.push({
+            id: item.id,
+            number: item.number,
+            name: item.name,
+            fileName: item.fileName,
+            fileBlob: audioBlob,
+            audio: new Audio(URL.createObjectURL(audioBlob)),
+            volume: item.volume
+          });
+        }
+      }
+
+      currentCueIndex = 0;
+      renderCues();
+      statusText.innerText = "Project Loaded!";
+    } catch (err) {
+      alert("Failed to load project: " + err.message);
+      statusText.innerText = "Load Failed";
+    }
+
+    document.getElementById('loadProjectInput').value = '';
+    setTimeout(() => { statusText.innerText = "Ready"; }, 3000);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+      e.preventDefault();
+      playCurrentCue();
+    }
+  });
+</script>
+
+</body>
+</html>
