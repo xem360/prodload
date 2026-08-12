@@ -186,6 +186,237 @@
       <div id="wipNotice" class="wip-badge">W.I.P</div>
       <div class="button-group">
         <a href="prodload.html" class="btn-metallic">Open Prodload</a>
+        <a href="prodload-server.html" class="btn-metallic">Open Prodload (Server)</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <h3>Instant Cueing</h3>
+      <p>Seamlessly trigger sequential cues during live theatrical productions using hotkeys or spacebar triggers.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Zero Delay</h3>
+      <p>Operates entirely within your browser local memory for instantaneous playback with zero network dependency.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Self-Contained Archives</h3>
+      <p>Save and bundle your entire show configuration along with all sound assets into a single <code>.prodload</code> file.</p>
+    </div>
+  </div>
+
+  <footer>
+    2026 Prodload Community. Designed for local theater cueing and at home productions.
+  </footer>
+
+  <script>
+    let wipTimer = null;
+
+    function triggerWip() {
+      const wipNotice = document.getElementById('wipNotice');
+      
+      wipNotice.classList.add('show');
+
+      if (wipTimer) {
+        clearTimeout(wipTimer);
+      }
+
+      wipTimer = setTimeout(() => {
+        wipNotice.classList.remove('show');
+      }, 2000);
+    }
+  </script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prodload Community</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Lucida Grande", Lucida, Verdana, Geneva, Arial, sans-serif;
+      background-color: #ffffff;
+      color: #333333;
+    }
+
+    .apple-header {
+      background: linear-gradient(180deg, #e6e6e6 0%, #cccccc 50%, #b3b3b3 51%, #8c8c8c 100%);
+      border-bottom: 1px solid #555;
+      padding: 10px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .nav-container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .apple-logo {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #222;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 25px;
+    }
+
+    .nav-links a {
+      color: #222;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+    }
+
+    .hero-section {
+      background: radial-gradient(circle, #ffffff 0%, #f0f0f0 100%);
+      text-align: center;
+      padding: 60px 20px 40px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .hero-title {
+      font-size: 2.8rem;
+      font-weight: normal;
+      margin: 0 0 10px;
+      letter-spacing: -1px;
+      color: #111;
+    }
+
+    .hero-subtitle {
+      font-size: 1.2rem;
+      color: #666;
+      margin: 0 0 30px;
+    }
+
+    .action-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 30px;
+      min-height: 120px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .wip-badge {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #d32f2f;
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      padding: 4px 12px;
+      border-radius: 10px;
+      opacity: 0;
+      transition: opacity 0.6s ease-out;
+      height: 20px;
+      line-height: 20px;
+    }
+
+    .wip-badge.show {
+      opacity: 1;
+    }
+
+    .btn-metallic {
+      background: linear-gradient(180deg, #ffffff 0%, #e0e0e0 45%, #cecece 50%, #b4b4b4 100%);
+      border: 1px solid #888888;
+      border-radius: 16px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 2px 4px rgba(0, 0, 0, 0.15);
+      color: #222222;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: bold;
+      padding: 10px 24px;
+      text-decoration: none;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+      display: inline-block;
+      transition: all 0.1s ease;
+    }
+
+    .btn-metallic:hover {
+      background: linear-gradient(180deg, #ffffff 0%, #ebd3f7 45%, #d1b2e0 50%, #b88cc9 100%);
+      border-color: #666;
+    }
+
+    .btn-metallic:active {
+      background: linear-gradient(180deg, #aaaaaa 0%, #cccccc 100%);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    .feature-grid {
+      max-width: 900px;
+      margin: 40px auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      padding: 0 20px;
+    }
+
+    .feature-card {
+      text-align: center;
+    }
+
+    .feature-card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+      color: #222;
+    }
+
+    .feature-card p {
+      font-size: 0.85rem;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    footer {
+      background-color: #f2f2f2;
+      border-top: 1px solid #e0e0e0;
+      padding: 20px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="apple-header">
+    <div class="nav-container">
+      <a href="#" class="apple-logo"> Prodload</a>
+      <div class="nav-links">
+        <a href="docs.html">Docs</a>
+        <a href="prodload.html">Open Prodload</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-section">
+    <h1 class="hero-title">Prodload</h1>
+    <p class="hero-subtitle">Professional sound queueing. Simple, local, and built for stage.</p>
+
+    <div class="action-container">
+      <div id="wipNotice" class="wip-badge">W.I.P</div>
+      <div class="button-group">
+        <a href="prodload.html" class="btn-metallic">Open Prodload</a>
         <button class="btn-metallic" onclick="triggerWip()">Open Prodload (Server)</button>
       </div>
     </div>
