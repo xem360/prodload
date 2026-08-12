@@ -17,6 +17,7 @@
       --success: #03dac6;
       --warning: #ffb74d;
       --wait-cue: #ff80ab;
+      --btn-green: #2e7d32;
     }
 
     body {
@@ -98,10 +99,30 @@
       border: none;
     }
 
-    button.btn-save {
-      background-color: #2e7d32;
+    button.btn-continue {
+      background-color: #0288d1;
       color: #fff;
       border: none;
+    }
+
+    button.btn-continue:hover {
+      background-color: #039be5;
+    }
+
+    button.btn-save {
+      background-color: var(--btn-green);
+      color: #fff;
+      border: none;
+    }
+
+    button.btn-library {
+      background-color: #6a1b9a;
+      color: #fff;
+      border: none;
+    }
+
+    button.btn-library:hover {
+      background-color: #7b1fa2;
     }
 
     .cue-list {
@@ -186,7 +207,7 @@
       flex-wrap: wrap;
     }
 
-    select.hotkey-select, input.wait-time-input {
+    select.hotkey-select, input.wait-time-input, select.library-select {
       background: #2a2a2a;
       color: var(--text);
       border: 1px solid #444;
@@ -238,20 +259,78 @@
       background: var(--card-bg);
       padding: 25px;
       border-radius: 8px;
-      max-width: 500px;
+      max-width: 550px;
       width: 90%;
       border: 1px solid #444;
       box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
 
-    .modal h2 { margin-top: 0; color: var(--accent); }
-    .modal p { line-height: 1.5; color: var(--text); }
-    .modal ul { padding-left: 20px; line-height: 1.6; }
-    .modal-actions {
+    .modal-header {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .modal-header h2 { margin: 0; color: var(--accent); }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .close-btn:hover { color: var(--text); }
+
+    .library-item {
+      background: #25252b;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border: 1px solid #333;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .library-item:hover {
+      background: #2e2e36;
+    }
+
+    .library-item-title {
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .library-item-desc {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .preview-drawer {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #444;
       gap: 10px;
-      margin-top: 20px;
+    }
+
+    .preview-btn {
+      background-color: var(--btn-green);
+      color: #fff;
+      border: none;
+    }
+
+    .preview-btn.playing {
+      background-color: var(--danger);
+      color: #000;
+    }
+
+    .insert-btn {
+      background-color: var(--warning);
+      color: #000;
+      border: none;
     }
 
     .toggle-auto {
@@ -272,7 +351,7 @@
       <button onclick="toggleWhatsNew()">✨ What's New</button>
     </div>
     <div class="master-controls">
-      <button class="btn-primary" onclick="playCurrentCue()">GO (Space)</button>
+      <button class="btn-primary" onclick="startFromBeginning()">GO (Space)</button>
       <button class="btn-warning" onclick="fadeAll()">FADE ALL</button>
       <button class="btn-danger" onclick="stopAll()">PANIC / STOP ALL</button>
     </div>
@@ -282,6 +361,7 @@
     <div class="project-actions">
       <button class="btn-save" onclick="saveProject()">💾 Save .prodload</button>
       <button onclick="document.getElementById('loadProjectInput').click()">📂 Open .prodload</button>
+      <button class="btn-library" onclick="openSoundLibrary()">🔊 Open Sound Library</button>
       <input type="file" id="loadProjectInput" accept=".prodload,.zip" onchange="loadProject(this.files[0])">
     </div>
     <div style="align-self: center; color: var(--text-dim); font-size: 0.9rem;" id="statusText">
@@ -302,17 +382,26 @@
 
 <div class="modal-overlay" id="whatsNewModal">
   <div class="modal">
-    <h2>✨ What's New in Prodload</h2>
-    <ul>
-      <li><strong>Cue Renaming:</strong> Edit audio cue names directly inline.</li>
-      <li><strong>Script Cues:</strong> Attach specific stage script lines or triggers directly onto your cues.</li>
-      <li><strong>Wait Cues & Auto Execution:</strong> Add standalone delay timers that run and trigger the next sound automatically.</li>
-      <li><strong>Custom Cue Ordering:</strong> Move cues up or down to re-order your production flow.</li>
-      <li><strong>Chromebook Integration:</strong> Native web app install prompt for ChromeOS users.</li>
-    </ul>
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="toggleWhatsNew()">Close</button>
+    <div class="modal-header">
+      <h2>✨ What's New in Prodload</h2>
+      <button class="close-btn" onclick="toggleWhatsNew()">✕</button>
     </div>
+    <ul>
+      <li><strong>Sound Library Integration:</strong> Pick royalty-free theater effects straight from the built-in cloud audio catalog.</li>
+      <li><strong>Reset GO Sequence:</strong> Spacebar trigger now starts execution from Q1 at the beginning of the show list.</li>
+      <li><strong>Continue From Here:</strong> Select any cue mid-show and resume execution using the new inline button.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="modal-overlay" id="soundLibraryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🔊 Sound Library</h2>
+      <button class="close-btn" onclick="closeSoundLibrary()">✕</button>
+    </div>
+    <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 15px;">Select a preset sound effect below to preview or insert into your cue sequence.</p>
+    <div id="libraryContainer"></div>
   </div>
 </div>
 
@@ -328,11 +417,41 @@
 </div>
 
 <script>
+  // Sample Frontend JSON SFX Database
+  const soundLibraryJSON = [
+    {
+      id: "sfx_thunder",
+      name: "Thunderclap & Rain",
+      desc: "Dramatic thunder roll suitable for stage storm cues.",
+      url: "https://actions.google.com/sounds/v1/weather/thunder_crack.ogg"
+    },
+    {
+      id: "sfx_doorbell",
+      name: "Classic Doorbell",
+      desc: "Two-tone chime prompt for stage entrances.",
+      url: "https://actions.google.com/sounds/v1/doors/doorbell_chime.ogg"
+    },
+    {
+      id: "sfx_applause",
+      name: "Theater Crowd Applause",
+      desc: "Medium audience clapping sound effect.",
+      url: "https://actions.google.com/sounds/v1/crowds/medium_group_cheer.ogg"
+    },
+    {
+      id: "sfx_phone",
+      name: "Vintage Telephone Ring",
+      desc: "Retro desk phone ringing sequence.",
+      url: "https://actions.google.com/sounds/v1/office/phone_ringing.ogg"
+    }
+  ];
+
   let cues = [];
   let currentCueIndex = 0;
   const fadeIntervals = {};
   let waitTimeout = null;
   let deferredPrompt = null;
+  let previewAudio = null;
+  let activePreviewId = null;
 
   const fileInput = document.getElementById('fileInput');
   const cueListEl = document.getElementById('cueList');
@@ -372,6 +491,98 @@
     modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
   }
 
+  function openSoundLibrary() {
+    const container = document.getElementById('libraryContainer');
+    container.innerHTML = '';
+
+    soundLibraryJSON.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'library-item';
+      card.innerHTML = `
+        <div onclick="selectLibraryItem('${item.id}')">
+          <div class="library-item-title">${item.name}</div>
+          <div class="library-item-desc">${item.desc}</div>
+        </div>
+        <div class="preview-drawer" id="drawer_${item.id}">
+          <button class="preview-btn" id="pbtn_${item.id}" onclick="togglePreview('${item.id}', '${item.url}')">▶ Preview</button>
+          <button class="insert-btn" onclick="insertFromLibrary('${item.name}', '${item.url}')">⚡ Insert</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    document.getElementById('soundLibraryModal').style.display = 'flex';
+  }
+
+  function closeSoundLibrary() {
+    stopPreview();
+    document.getElementById('soundLibraryModal').style.display = 'none';
+  }
+
+  function selectLibraryItem(id) {
+    document.querySelectorAll('.preview-drawer').forEach(d => d.style.display = 'none');
+    const drawer = document.getElementById(`drawer_${id}`);
+    if (drawer) {
+      drawer.style.display = 'flex';
+    }
+  }
+
+  function togglePreview(id, url) {
+    const btn = document.getElementById(`pbtn_${id}`);
+
+    if (previewAudio && activePreviewId === id) {
+      stopPreview();
+      return;
+    }
+
+    stopPreview();
+
+    previewAudio = new Audio(url);
+    activePreviewId = id;
+    btn.innerText = "■ Stop";
+    btn.classList.add('playing');
+
+    previewAudio.play();
+    previewAudio.onended = () => {
+      stopPreview();
+    };
+  }
+
+  function stopPreview() {
+    if (previewAudio) {
+      previewAudio.pause();
+      previewAudio.currentTime = 0;
+      previewAudio = null;
+    }
+    if (activePreviewId) {
+      const btn = document.getElementById(`pbtn_${activePreviewId}`);
+      if (btn) {
+        btn.innerText = "▶ Preview";
+        btn.classList.remove('playing');
+      }
+      activePreviewId = null;
+    }
+  }
+
+  async function insertFromLibrary(name, url) {
+    statusText.innerText = "Fetching sound asset...";
+    closeSoundLibrary();
+
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const file = new File([blob], `${name}.ogg`, { type: blob.type });
+
+      handleFiles([file]);
+      statusText.innerText = "SFX Inserted!";
+    } catch (err) {
+      alert("Failed to download sound effect: " + err.message);
+      statusText.innerText = "Error loading SFX";
+    }
+
+    setTimeout(() => { statusText.innerText = "Ready"; }, 3000);
+  }
+
   function handleFiles(files) {
     Array.from(files).forEach((file) => {
       const cue = {
@@ -392,7 +603,7 @@
         if (cue.autoAdvance && currentCueIndex < cues.length - 1) {
           currentCueIndex++;
           renderCues();
-          playCurrentCue();
+          playCue(currentCueIndex);
         }
       });
 
@@ -427,7 +638,7 @@
     cueListEl.innerHTML = '';
     
     if (cues.length === 0) {
-      cueListEl.innerHTML = '<p style="text-align:center; color: var(--text-dim);">No cues added yet. Upload audio, add wait cues, or load a .prodload project file.</p>';
+      cueListEl.innerHTML = '<p style="text-align:center; color: var(--text-dim);">No cues added yet. Upload audio, select from library, or load a .prodload project file.</p>';
       return;
     }
 
@@ -447,13 +658,14 @@
         </label>
         <label>Vol:</label>
         <input type="range" min="0" max="1" step="0.05" value="${cue.volume}" onchange="updateVolume(${index}, this.value)">
-        <button onclick="playCue(${index})">Play</button>
+        <button onclick="playSingleCue(${index})">Play Solo</button>
+        <button class="btn-continue" onclick="continueFromHere(${index})">▶ Continue From Here</button>
         <button class="btn-warning" onclick="fadeCue(${index})">Fade</button>
         <button onclick="stopCue(${index})">Stop</button>
       ` : `
         <label>Wait (s):</label>
         <input type="number" class="wait-time-input" min="0.5" step="0.5" value="${cue.duration}" onchange="updateWaitDuration(${index}, this.value)">
-        <button onclick="playCue(${index})">Start Timer</button>
+        <button class="btn-continue" onclick="continueFromHere(${index})">▶ Continue From Here</button>
       `;
 
       card.innerHTML = `
@@ -531,6 +743,18 @@
     }
   }
 
+  function playSingleCue(index) {
+    if (cues[index] && cues[index].type === 'audio') {
+      if (fadeIntervals[index]) {
+        clearInterval(fadeIntervals[index]);
+        delete fadeIntervals[index];
+      }
+      cues[index].audio.currentTime = 0;
+      cues[index].audio.volume = cues[index].volume;
+      cues[index].audio.play();
+    }
+  }
+
   function playCue(index) {
     if (!cues[index]) return;
 
@@ -559,9 +783,23 @@
         if (currentCueIndex < cues.length - 1) {
           currentCueIndex++;
           renderCues();
-          playCurrentCue();
+          playCue(currentCueIndex);
         }
       }, cue.duration * 1000);
+    }
+  }
+
+  function startFromBeginning() {
+    stopAll();
+    if (cues.length > 0) {
+      playCue(0);
+    }
+  }
+
+  function continueFromHere(index) {
+    stopAll();
+    if (cues[index]) {
+      playCue(index);
     }
   }
 
@@ -611,13 +849,7 @@
       }
       cues[index].audio.pause();
       cues[index].audio.currentTime = 0;
-      cues[index].audio.volume = cues[index].volume;
-    }
-  }
-
-  function playCurrentCue() {
-    if (cues.length > 0 && currentCueIndex < cues.length) {
-      playCue(currentCueIndex);
+      cues[index].audio.volume = cue.volume;
     }
   }
 
@@ -757,7 +989,7 @@
               if (cue.autoAdvance && cueIdx !== -1 && cueIdx < cues.length - 1) {
                 currentCueIndex = cueIdx + 1;
                 renderCues();
-                playCurrentCue();
+                playCue(currentCueIndex);
               }
             });
 
@@ -794,7 +1026,7 @@
 
     if (e.code === 'Space') {
       e.preventDefault();
-      playCurrentCue();
+      startFromBeginning();
       return;
     }
 
@@ -802,7 +1034,7 @@
       const targetIndex = cues.findIndex(c => c.hotkey === e.key);
       if (targetIndex !== -1) {
         e.preventDefault();
-        playCue(targetIndex);
+        playSingleCue(targetIndex);
       }
     }
   });
