@@ -96,6 +96,11 @@
       cursor: pointer;
     }
 
+    .search-btn:hover {
+      background: #2a2a32;
+      color: var(--text-main);
+    }
+
     .search-key {
       background: #2a2a32;
       padding: 2px 6px;
@@ -112,6 +117,11 @@
       border-radius: 6px;
       text-decoration: none;
       font-size: 0.85rem;
+      transition: opacity 0.15s ease;
+    }
+
+    .app-link-btn:hover {
+      opacity: 0.9;
     }
 
     .docs-layout {
@@ -151,6 +161,7 @@
       font-size: 0.9rem;
       margin-bottom: 2px;
       transition: all 0.15s ease;
+      cursor: pointer;
     }
 
     .nav-item:hover {
@@ -167,6 +178,7 @@
     .main-wrapper {
       padding: 40px 50px;
       overflow-y: auto;
+      scroll-behavior: smooth;
     }
 
     .breadcrumbs {
@@ -198,6 +210,7 @@
       font-size: 1.6rem;
       font-weight: 700;
       margin: 35px 0 15px;
+      scroll-margin-top: 20px;
     }
 
     p {
@@ -211,6 +224,7 @@
       color: var(--accent-blue);
       text-decoration: none;
       font-weight: 600;
+      cursor: pointer;
     }
 
     a.inline-link:hover {
@@ -225,6 +239,16 @@
       font-family: monospace;
       font-size: 0.9em;
       color: #e2e2e8;
+    }
+
+    .doc-img {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      margin: 15px 0 25px;
+      display: block;
     }
 
     .info-box {
@@ -269,10 +293,52 @@
       text-decoration: none;
       font-size: 0.85rem;
       transition: color 0.15s ease;
+      cursor: pointer;
     }
 
     .toc-list a:hover {
       color: var(--accent-blue);
+    }
+
+    .doc-section {
+      display: none;
+    }
+
+    .doc-section.active {
+      display: block;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: var(--bg-sidebar);
+      padding: 25px;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 90%;
+      border: 1px solid var(--border-color);
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 10px;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      border-radius: 6px;
+      margin-top: 15px;
+      box-sizing: border-box;
     }
 
     @media (max-width: 900px) {
@@ -291,17 +357,14 @@
     <div class="top-left">
       <a href="index.html" class="brand">🎭 Prodload</a>
       <nav class="top-nav">
-        <a href="docs.html" class="active">Docs</a>
-        <a href="#">API</a>
-        <a href="#">Guides</a>
-        <a href="#">Community</a>
+        <a href="#" class="active">Docs</a>
       </nav>
     </div>
     <div class="top-right">
-      <div class="search-btn">
+      <button class="search-btn" onclick="openSearchModal()">
         <span>🔍 Search docs</span>
         <span class="search-key">Ctrl K</span>
-      </div>
+      </button>
       <a href="prodload.html" class="app-link-btn">Launch App 🚀</a>
     </div>
   </header>
@@ -311,97 +374,218 @@
     <aside class="sidebar-left">
       <div class="nav-group">
         <div class="nav-group-title">Get Started</div>
-        <a href="#" class="nav-item active">Introduction</a>
-        <a href="#" class="nav-item">Quick Start</a>
-        <a href="#" class="nav-item">Architecture</a>
+        <a class="nav-item active" onclick="showSection('intro', this)">Introduction</a>
+        <a class="nav-item" onclick="showSection('quickstart', this)">Quick Start</a>
       </div>
 
       <div class="nav-group">
         <div class="nav-group-title">Cue Management</div>
-        <a href="#" class="nav-item">Audio Cues</a>
-        <a href="#" class="nav-item">Wait Timers</a>
-        <a href="#" class="nav-item">Script Notes</a>
-        <a href="#" class="nav-item">Hotkey Mapping</a>
+        <a class="nav-item" onclick="showSection('cues', this)">Audio Cues & Timers</a>
       </div>
 
       <div class="nav-group">
         <div class="nav-group-title">Project Files</div>
-        <a href="#" class="nav-item">The .prodload Format</a>
-        <a href="#" class="nav-item">Import & Export</a>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-group-title">Platform Support</div>
-        <a href="#" class="nav-item">Chromebook PWA</a>
-        <a href="#" class="nav-item">Offline Operations</a>
+        <a class="nav-item" onclick="showSection('format', this)">The .prodload Format</a>
       </div>
     </aside>
 
-    <main class="main-wrapper">
-      <div class="breadcrumbs">
-        <span>🏠</span>
-        <span>›</span>
-        <span>Get Started</span>
-        <span>›</span>
-        <span class="breadcrumb-active">Introduction</span>
+    <main class="main-wrapper" id="mainContainer">
+      
+      <div id="intro" class="doc-section active">
+        <div class="breadcrumbs">
+          <span>🏠</span>
+          <span>›</span>
+          <span>Get Started</span>
+          <span>›</span>
+          <span class="breadcrumb-active">Introduction</span>
+        </div>
+
+        <h1>What is Prodload?</h1>
+
+        <p>
+          <strong>Prodload</strong> is a modern, web-native sound queueing application built specifically for live theater, stage productions, broadcasts, and event sound engineering. By leveraging modern browser audio APIs and client-side ZIP packaging, Prodload allows sound engineers to organize, sequence, and trigger sound effects without server dependencies or complex installations.
+        </p>
+
+        <img src="https://placehold.co/600x400/EEE/31343C?text=Prodload+Dashboard+Overview" alt="Prodload Dashboard" class="doc-img">
+
+        <div class="info-box">
+          <p>💡 <strong>Zero Server Footprint:</strong> Prodload runs 100% locally inside your web browser. Audio files never leave your machine during show execution or file bundling.</p>
+        </div>
+
+        <h2 id="getting-started">Getting started</h2>
+
+        <p>
+          We recommend beginning with the <a href="prodload.html" class="inline-link">Prodload Application</a>. You can immediately drag and drop audio files (MP3, WAV, OGG, FLAC) into the cue builder to create your show order.
+        </p>
+
+        <h2 id="core-capabilities">Core capabilities</h2>
+
+        <p>
+          Prodload simplifies sound cueing during live performances with several dedicated workflows:
+        </p>
+
+        <p>
+          <strong>1. Sequential Spacebar GO Trigger:</strong> Fire your sound cues sequentially in order with zero latency using the spacebar key during live performances.
+        </p>
+
+        <p>
+          <strong>2. Standalone Wait Cues & Auto-Advance:</strong> Insert custom delay timers that automatically countdown and trigger the next sequential sound without manual operator intervention.
+        </p>
+
+        <img src="https://placehold.co/600x400/EEE/31343C?text=Wait+Cues+%26+Automation" alt="Wait Cues Automation" class="doc-img">
+
+        <p>
+          <strong>3. The <code>.prodload</code> Archive Format:</strong> Export your entire production into a single self-contained project archive containing audio binary blobs and JSON sequence configurations.
+        </p>
       </div>
 
-      <h1>What is Prodload?</h1>
+      <div id="quickstart" class="doc-section">
+        <div class="breadcrumbs">
+          <span>🏠</span>
+          <span>›</span>
+          <span>Get Started</span>
+          <span>›</span>
+          <span class="breadcrumb-active">Quick Start</span>
+        </div>
 
-      <p>
-        <strong>Prodload</strong> is a modern, web-native sound queueing application built specifically for live theater, stage productions, broadcasts, and event sound engineering. By leveraging modern browser audio APIs and client-side ZIP packaging, Prodload allows sound engineers to organize, sequence, and trigger sound effects without server dependencies or complex installations.
-      </p>
+        <h1>Quick Start Guide</h1>
 
-      <div class="info-box">
-        <p>💡 <strong>Zero Server Footprint:</strong> Prodload runs 100% locally inside your web browser. Audio files never leave your machine during show execution or file bundling.</p>
+        <p>Setting up your first production in Prodload takes under two minutes. Follow these simple steps to prepare your audio workspace.</p>
+
+        <h2>1. Adding Audio Assets</h2>
+        <p>Drag audio files directly into the top dropzone or click "browse files" to batch import tracks into your show sequence.</p>
+
+        <img src="https://placehold.co/600x400/EEE/31343C?text=Drag+%26+Drop+Audio+Files" alt="Drag and Drop Files" class="doc-img">
+
+        <h2>2. Configuring Hotkeys & Script Cues</h2>
+        <p>Assign number key hotkeys (0–9) for instant audio playback and add stage script prompts to each cue card.</p>
+
+        <img src="https://placehold.co/600x400/EEE/31343C?text=Hotkey+Mapping+%26+Script+Notes" alt="Hotkey Mapping" class="doc-img">
       </div>
 
-      <h2>Getting started</h2>
+      <div id="cues" class="doc-section">
+        <div class="breadcrumbs">
+          <span>🏠</span>
+          <span>›</span>
+          <span>Cue Management</span>
+          <span>›</span>
+          <span class="breadcrumb-active">Audio Cues & Timers</span>
+        </div>
 
-      <p>
-        We recommend beginning with the <a href="prodload.html" class="inline-link">Prodload Application</a>. You can immediately drag and drop audio files (MP3, WAV, OGG, FLAC) into the cue builder to create your show order.
-      </p>
+        <h1>Audio Cues & Wait Timers</h1>
 
-      <p>
-        Check out the <a href="#" class="inline-link">Quick Start Guide</a> for a detailed walk-through on setting up hotkey triggers, creating standalone wait timers, and attaching stage script notes directly onto your cues.
-      </p>
+        <p>Prodload gives you full control over cue execution order, volume control, fading, and wait timings.</p>
 
-      <h2>Core capabilities</h2>
+        <h2>Using Wait Cues</h2>
+        <p>Click "Add Wait Cue" to place a timer block in your cue stack. When triggered, the timer counts down and immediately auto-executes the next cue in line.</p>
 
-      <p>
-        Prodload simplifies sound cueing during live performances with several dedicated workflows:
-      </p>
+        <img src="https://placehold.co/600x400/EEE/31343C?text=Wait+Timer+Configuration" alt="Wait Timers" class="doc-img">
+      </div>
 
-      <p>
-        <strong>1. Sequential Spacebar GO Trigger:</strong> Fire your sound cues sequentially in order with zero latency using the spacebar key during live performances.
-      </p>
+      <div id="format" class="doc-section">
+        <div class="breadcrumbs">
+          <span>🏠</span>
+          <span>›</span>
+          <span>Project Files</span>
+          <span>›</span>
+          <span class="breadcrumb-active">The .prodload Format</span>
+        </div>
 
-      <p>
-        <strong>2. Standalone Wait Cues & Auto-Advance:</strong> Insert custom delay timers that automatically countdown and trigger the next sequential sound without manual operator intervention.
-      </p>
+        <h1>The .prodload Format</h1>
 
-      <p>
-        <strong>3. The <code>.prodload</code> Archive Format:</strong> Export your entire production into a single self-contained project archive containing audio binary blobs and JSON sequence configurations.
-      </p>
+        <p>Projects are bundled as local <code>.prodload</code> files, which are standard zip archives containing a <code>project.json</code> configuration file along with raw binary audio assets.</p>
 
-      <h2>Running on Chromebooks</h2>
+        <img src="https://placehold.co/600x400/EEE/31343C?text=.prodload+Archive+Structure" alt="Archive Structure" class="doc-img">
+      </div>
 
-      <p>
-        Prodload includes native detection and PWA support for ChromeOS devices, allowing sound technicians to install the system directly to their Chromebook desktop for full offline operation during stage rehearsals and performances.
-      </p>
     </main>
 
     <aside class="sidebar-right">
       <div class="toc-title">On this page</div>
-      <ul class="toc-list">
-        <li><a href="#">What is Prodload?</a></li>
-        <li><a href="#">Getting started</a></li>
-        <li><a href="#">Core capabilities</a></li>
-        <li><a href="#">Running on Chromebooks</a></li>
+      <ul class="toc-list" id="tocList">
+        <li><a onclick="scrollToHeading('getting-started')">Getting started</a></li>
+        <li><a onclick="scrollToHeading('core-capabilities')">Core capabilities</a></li>
       </ul>
     </aside>
 
   </div>
+
+  <div class="modal-overlay" id="searchModal" onclick="closeSearchModal(event)">
+    <div class="modal">
+      <h3 style="color: var(--text-main);">Search Documentation</h3>
+      <input type="text" placeholder="Type to search docs..." id="searchInput" oninput="handleSearch(this.value)">
+      <div id="searchResults" style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);"></div>
+    </div>
+  </div>
+
+  <script>
+    function showSection(sectionId, element) {
+      document.querySelectorAll('.doc-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      
+      document.getElementById(sectionId).classList.add('active');
+      element.classList.add('active');
+      
+      document.getElementById('mainContainer').scrollTop = 0;
+    }
+
+    function scrollToHeading(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function openSearchModal() {
+      document.getElementById('searchModal').style.display = 'flex';
+      document.getElementById('searchInput').focus();
+    }
+
+    function closeSearchModal(e) {
+      if (e.target.id === 'searchModal') {
+        document.getElementById('searchModal').style.display = 'none';
+      }
+    }
+
+    function handleSearch(query) {
+      const resultsEl = document.getElementById('searchResults');
+      if (!query.trim()) {
+        resultsEl.innerHTML = '';
+        return;
+      }
+      
+      const matches = [
+        { name: 'Introduction', id: 'intro' },
+        { name: 'Quick Start', id: 'quickstart' },
+        { name: 'Audio Cues & Timers', id: 'cues' },
+        { name: 'The .prodload Format', id: 'format' }
+      ].filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
+
+      if (matches.length > 0) {
+        resultsEl.innerHTML = matches.map(m => 
+          `<p style="margin-bottom: 8px;"><a class="inline-link" onclick="selectSearchResult('${m.id}')">${m.name}</a></p>`
+        ).join('');
+      } else {
+        resultsEl.innerHTML = '<p>No results found.</p>';
+      }
+    }
+
+    function selectSearchResult(sectionId) {
+      document.getElementById('searchModal').style.display = 'none';
+      const navItem = Array.from(document.querySelectorAll('.nav-item'))
+        .find(item => item.getAttribute('onclick').includes(sectionId));
+      if (navItem) {
+        showSection(sectionId, navItem);
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        openSearchModal();
+      }
+    });
+  </script>
 
 </body>
 </html>
