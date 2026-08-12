@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What is Prodload? | Prodload Docs</title>
+  <style>
+    :root {
+      --bg-main: #121214;
+      --bg-sidebar: #17171a;
+      --bg-active: #25252a;
+      --border-color: #2e2e35;
+      --text-main: #f0f0f3;
+      --text-muted: #a0a0ab;
+      --accent-blue: #38bdf8;
+      --accent-purple: #bb86fc;
+      --hover-bg: #1f1f24;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      height: 56px;
+      background-color: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 10;
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-nav {
+      display: flex;
+      gap: 20px;
+    }
+
+    .top-nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+
+    .top-nav a:hover, .top-nav a.active {
+      color: var(--accent-blue);
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .search-btn {
+      background: #202025;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      cursor: pointer;
+    }
+
+    .search-key {
+      background: #2a2a32;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: #ccc;
+    }
+
+    .app-link-btn {
+      background: var(--accent-purple);
+      color: #000;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr 220px;
+      flex-grow: 1;
+      overflow: hidden;
+    }
+
+    .sidebar-left {
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      padding: 20px 15px;
+      overflow-y: auto;
+    }
+
+    .nav-group {
+      margin-bottom: 20px;
+    }
+
+    .nav-group-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      padding-left: 10px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 2px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background-color: var(--hover-bg);
+      color: var(--text-main);
+    }
+
+    .nav-item.active {
+      background-color: var(--bg-active);
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+
+    .main-wrapper {
+      padding: 40px 50px;
+      overflow-y: auto;
+    }
+
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+
+    .breadcrumb-active {
+      background: #25252b;
+      padding: 2px 10px;
+      border-radius: 12px;
+      color: var(--accent-blue);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin: 35px 0 15px;
+    }
+
+    p {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: #d1d1d6;
+      margin-bottom: 18px;
+    }
+
+    a.inline-link {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a.inline-link:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      background-color: #202026;
+      border: 1px solid var(--border-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9em;
+      color: #e2e2e8;
+    }
+
+    .info-box {
+      background-color: #1a232e;
+      border-left: 4px solid var(--accent-blue);
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin: 25px 0;
+    }
+
+    .info-box p {
+      margin: 0;
+      color: #c0e0f8;
+      font-size: 0.95rem;
+    }
+
+    .sidebar-right {
+      padding: 40px 20px;
+      border-left: 1px solid var(--border-color);
+      overflow-y: auto;
+    }
+
+    .toc-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .toc-list {
+      list-style: none;
+    }
+
+    .toc-list li {
+      margin-bottom: 10px;
+    }
+
+    .toc-list a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.15s ease;
+    }
+
+    .toc-list a:hover {
+      color: var(--accent-blue);
+    }
+
+    @media (max-width: 900px) {
+      .docs-layout {
+        grid-template-columns: 220px 1fr;
+      }
+      .sidebar-right {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="top-left">
+      <a href="index.html" class="brand">🎭 Prodload</a>
+      <nav class="top-nav">
+        <a href="docs.html" class="active">Docs</a>
+        <a href="#">API</a>
+        <a href="#">Guides</a>
+        <a href="#">Community</a>
+      </nav>
+    </div>
+    <div class="top-right">
+      <div class="search-btn">
+        <span>🔍 Search docs</span>
+        <span class="search-key">Ctrl K</span>
+      </div>
+      <a href="prodload.html" class="app-link-btn">Launch App 🚀</a>
+    </div>
+  </header>
+
+  <div class="docs-layout">
+    
+    <aside class="sidebar-left">
+      <div class="nav-group">
+        <div class="nav-group-title">Get Started</div>
+        <a href="#" class="nav-item active">Introduction</a>
+        <a href="#" class="nav-item">Quick Start</a>
+        <a href="#" class="nav-item">Architecture</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-title">Cue Management</div>
+        <a href="#" class="nav-item">Audio Cues</a>
+        <a href="#" class="nav-item">Wait Timers</a>
+        <a href="#" class="nav-item">Script Notes</a>
+        <a href="#" class="nav-item">Hotkey Mapping</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-title">Project Files</div>
+        <a href="#" class="nav-item">The .prodload Format</a>
+        <a href="#" class="nav-item">Import & Export</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-title">Platform Support</div>
+        <a href="#" class="nav-item">Chromebook PWA</a>
+        <a href="#" class="nav-item">Offline Operations</a>
+      </div>
+    </aside>
+
+    <main class="main-wrapper">
+      <div class="breadcrumbs">
+        <span>🏠</span>
+        <span>›</span>
+        <span>Get Started</span>
+        <span>›</span>
+        <span class="breadcrumb-active">Introduction</span>
+      </div>
+
+      <h1>What is Prodload?</h1>
+
+      <p>
+        <strong>Prodload</strong> is a modern, web-native sound queueing application built specifically for live theater, stage productions, broadcasts, and event sound engineering. By leveraging modern browser audio APIs and client-side ZIP packaging, Prodload allows sound engineers to organize, sequence, and trigger sound effects without server dependencies or complex installations.
+      </p>
+
+      <div class="info-box">
+        <p>💡 <strong>Zero Server Footprint:</strong> Prodload runs 100% locally inside your web browser. Audio files never leave your machine during show execution or file bundling.</p>
+      </div>
+
+      <h2>Getting started</h2>
+
+      <p>
+        We recommend beginning with the <a href="prodload.html" class="inline-link">Prodload Application</a>. You can immediately drag and drop audio files (MP3, WAV, OGG, FLAC) into the cue builder to create your show order.
+      </p>
+
+      <p>
+        Check out the <a href="#" class="inline-link">Quick Start Guide</a> for a detailed walk-through on setting up hotkey triggers, creating standalone wait timers, and attaching stage script notes directly onto your cues.
+      </p>
+
+      <h2>Core capabilities</h2>
+
+      <p>
+        Prodload simplifies sound cueing during live performances with several dedicated workflows:
+      </p>
+
+      <p>
+        <strong>1. Sequential Spacebar GO Trigger:</strong> Fire your sound cues sequentially in order with zero latency using the spacebar key during live performances.
+      </p>
+
+      <p>
+        <strong>2. Standalone Wait Cues & Auto-Advance:</strong> Insert custom delay timers that automatically countdown and trigger the next sequential sound without manual operator intervention.
+      </p>
+
+      <p>
+        <strong>3. The <code>.prodload</code> Archive Format:</strong> Export your entire production into a single self-contained project archive containing audio binary blobs and JSON sequence configurations.
+      </p>
+
+      <h2>Running on Chromebooks</h2>
+
+      <p>
+        Prodload includes native detection and PWA support for ChromeOS devices, allowing sound technicians to install the system directly to their Chromebook desktop for full offline operation during stage rehearsals and performances.
+      </p>
+    </main>
+
+    <aside class="sidebar-right">
+      <div class="toc-title">On this page</div>
+      <ul class="toc-list">
+        <li><a href="#">What is Prodload?</a></li>
+        <li><a href="#">Getting started</a></li>
+        <li><a href="#">Core capabilities</a></li>
+        <li><a href="#">Running on Chromebooks</a></li>
+      </ul>
+    </aside>
+
+  </div>
+
+</body>
+</html>
