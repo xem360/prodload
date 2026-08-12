@@ -16,6 +16,7 @@
       --danger: #cf6679;
       --success: #03dac6;
       --warning: #ffb74d;
+      --wait-cue: #ff80ab;
     }
 
     body {
@@ -27,7 +28,7 @@
     }
 
     .container {
-      max-width: 950px;
+      max-width: 1000px;
       margin: 0 auto;
     }
 
@@ -57,11 +58,13 @@
       padding: 10px 15px;
       border-radius: 6px;
       border: 1px solid #2a2a2a;
+      flex-wrap: wrap;
     }
 
     .project-actions, .master-controls {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     button {
@@ -104,7 +107,7 @@
     .cue-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
     .cue-card {
@@ -113,10 +116,8 @@
       padding: 15px;
       border-radius: 4px;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .cue-card.active {
@@ -124,12 +125,58 @@
       background-color: #252a2e;
     }
 
-    .cue-info { flex-grow: 1; min-width: 150px; }
+    .cue-card.wait-type {
+      border-left-color: var(--wait-cue);
+    }
+
+    .cue-card-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .cue-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-grow: 1;
+      min-width: 200px;
+    }
 
     .cue-number {
       font-weight: bold;
       color: var(--accent);
-      margin-right: 10px;
+      min-width: 35px;
+    }
+
+    .cue-name-input {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 1rem;
+      width: 100%;
+      max-width: 220px;
+    }
+
+    .script-cue-input {
+      background: #181818;
+      border: 1px dashed #444;
+      color: var(--text-dim);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .script-cue-input:focus {
+      color: var(--text);
+      border-color: var(--accent);
     }
 
     .cue-controls {
@@ -139,7 +186,7 @@
       flex-wrap: wrap;
     }
 
-    select.hotkey-select {
+    select.hotkey-select, input.wait-time-input {
       background: #2a2a2a;
       color: var(--text);
       border: 1px solid #444;
@@ -148,7 +195,17 @@
       font-weight: bold;
     }
 
+    input.wait-time-input {
+      width: 60px;
+    }
+
     input[type="range"] { width: 80px; }
+
+    .action-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
 
     .upload-zone {
       border: 2px dashed #444;
@@ -157,6 +214,7 @@
       border-radius: 4px;
       margin-bottom: 20px;
       background-color: rgba(255, 255, 255, 0.02);
+      flex-grow: 1;
     }
 
     .upload-zone input { display: none; }
@@ -187,10 +245,21 @@
     }
 
     .modal h2 { margin-top: 0; color: var(--accent); }
+    .modal p { line-height: 1.5; color: var(--text); }
     .modal ul { padding-left: 20px; line-height: 1.6; }
-    .modal-close {
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
       margin-top: 20px;
-      float: right;
+    }
+
+    .toggle-auto {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
     }
   </style>
 </head>
@@ -220,9 +289,12 @@
     </div>
   </div>
 
-  <div class="upload-zone">
-    <p>Add sounds to show: Drag & drop audio files here or <label for="fileInput">browse files</label></p>
-    <input type="file" id="fileInput" multiple accept="audio/*">
+  <div class="action-bar">
+    <div class="upload-zone">
+      <p>Add sounds: Drag & drop audio files here or <label for="fileInput">browse files</label></p>
+      <input type="file" id="fileInput" multiple accept="audio/*">
+    </div>
+    <button onclick="addWaitCue()" style="align-self: center; height: 50px;">⏱️ Add Wait Cue</button>
   </div>
 
   <div class="cue-list" id="cueList"></div>
@@ -232,12 +304,26 @@
   <div class="modal">
     <h2>✨ What's New in Prodload</h2>
     <ul>
-      <li><strong>Fade Out Controls:</strong> Added individual and master fade-out buttons to smoothly lower volume and stop playing sound effects.</li>
-      <li><strong>Number Key Mapping:</strong> Map number keys (0–9) to specific sound cues for instant hotkey playback.</li>
-      <li><strong>Custom Archive Format:</strong> Projects save directly as <code>.prodload</code> files, containing all sound data and queue configurations in one self-contained bundle.</li>
-      <li><strong>Spacebar GO Trigger:</strong> Instant keybinding to trigger sequential sound cues during live performances.</li>
+      <li><strong>Cue Renaming:</strong> Edit audio cue names directly inline.</li>
+      <li><strong>Script Cues:</strong> Attach specific stage script lines or triggers directly onto your cues.</li>
+      <li><strong>Wait Cues & Auto Execution:</strong> Add standalone delay timers that run and trigger the next sound automatically.</li>
+      <li><strong>Custom Cue Ordering:</strong> Move cues up or down to re-order your production flow.</li>
+      <li><strong>Chromebook Integration:</strong> Native web app install prompt for ChromeOS users.</li>
     </ul>
-    <button class="modal-close btn-primary" onclick="toggleWhatsNew()">Close</button>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="toggleWhatsNew()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="chromebookModal">
+  <div class="modal">
+    <h2>💻 Chromebook Detected</h2>
+    <p>Hey Chromebook User! Would you like to save Prodload as a web app? If so click install below (this is recommended for if you will be doing multiple productions, it won't take up much storage).</p>
+    <div class="modal-actions">
+      <button onclick="dismissChromebookPrompt()">Dismiss</button>
+      <button class="btn-primary" onclick="installChromebookApp()">Install Web App</button>
+    </div>
   </div>
 </div>
 
@@ -245,12 +331,41 @@
   let cues = [];
   let currentCueIndex = 0;
   const fadeIntervals = {};
+  let waitTimeout = null;
+  let deferredPrompt = null;
 
   const fileInput = document.getElementById('fileInput');
   const cueListEl = document.getElementById('cueList');
   const statusText = document.getElementById('statusText');
 
   fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const isChromebook = /CrOS/.test(navigator.userAgent);
+    if (isChromebook) {
+      document.getElementById('chromebookModal').style.display = 'flex';
+    }
+  });
+
+  function dismissChromebookPrompt() {
+    document.getElementById('chromebookModal').style.display = 'none';
+  }
+
+  async function installChromebookApp() {
+    dismissChromebookPrompt();
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    } else {
+      alert("To install Prodload on ChromeOS, click the 3-dot menu in your browser top right corner, then choose 'More tools' > 'Create shortcut...' or 'Install Prodload'.");
+    }
+  }
 
   function toggleWhatsNew() {
     const modal = document.getElementById('whatsNewModal');
@@ -260,32 +375,65 @@
   function handleFiles(files) {
     Array.from(files).forEach((file) => {
       const cue = {
+        type: 'audio',
         id: Date.now() + Math.random(),
         number: `Q${cues.length + 1}`,
         name: file.name.replace(/\.[^/.]+$/, ""),
+        scriptCue: '',
         fileName: file.name,
         fileBlob: file,
         audio: new Audio(URL.createObjectURL(file)),
         volume: 1,
-        hotkey: ''
+        hotkey: '',
+        autoAdvance: false
       };
       
+      cue.audio.addEventListener('ended', () => {
+        if (cue.autoAdvance && currentCueIndex < cues.length - 1) {
+          currentCueIndex++;
+          renderCues();
+          playCurrentCue();
+        }
+      });
+
       cues.push(cue);
     });
+    resequenceCues();
     renderCues();
+  }
+
+  function addWaitCue() {
+    const cue = {
+      type: 'wait',
+      id: Date.now() + Math.random(),
+      number: `Q${cues.length + 1}`,
+      name: 'Wait Delay',
+      scriptCue: '',
+      duration: 3,
+      hotkey: ''
+    };
+    cues.push(cue);
+    resequenceCues();
+    renderCues();
+  }
+
+  function resequenceCues() {
+    cues.forEach((cue, index) => {
+      cue.number = `Q${index + 1}`;
+    });
   }
 
   function renderCues() {
     cueListEl.innerHTML = '';
     
     if (cues.length === 0) {
-      cueListEl.innerHTML = '<p style="text-align:center; color: var(--text-dim);">No cues added yet. Upload audio or load a .prodload project file.</p>';
+      cueListEl.innerHTML = '<p style="text-align:center; color: var(--text-dim);">No cues added yet. Upload audio, add wait cues, or load a .prodload project file.</p>';
       return;
     }
 
     cues.forEach((cue, index) => {
       const card = document.createElement('div');
-      card.className = `cue-card ${index === currentCueIndex ? 'active' : ''}`;
+      card.className = `cue-card ${index === currentCueIndex ? 'active' : ''} ${cue.type === 'wait' ? 'wait-type' : ''}`;
       
       let hotkeyOptions = `<option value="">Key</option>`;
       for (let i = 0; i <= 9; i++) {
@@ -293,27 +441,88 @@
         hotkeyOptions += `<option value="${i}" ${selected}>Key ${i}</option>`;
       }
 
+      const controlsHtml = cue.type === 'audio' ? `
+        <label class="toggle-auto">
+          <input type="checkbox" ${cue.autoAdvance ? 'checked' : ''} onchange="toggleAutoAdvance(${index}, this.checked)"> Auto-Next
+        </label>
+        <label>Vol:</label>
+        <input type="range" min="0" max="1" step="0.05" value="${cue.volume}" onchange="updateVolume(${index}, this.value)">
+        <button onclick="playCue(${index})">Play</button>
+        <button class="btn-warning" onclick="fadeCue(${index})">Fade</button>
+        <button onclick="stopCue(${index})">Stop</button>
+      ` : `
+        <label>Wait (s):</label>
+        <input type="number" class="wait-time-input" min="0.5" step="0.5" value="${cue.duration}" onchange="updateWaitDuration(${index}, this.value)">
+        <button onclick="playCue(${index})">Start Timer</button>
+      `;
+
       card.innerHTML = `
-        <div class="cue-info">
-          <span class="cue-number">${cue.number}</span>
-          <strong class="cue-name">${cue.name}</strong>
+        <div class="cue-card-main">
+          <div class="cue-info">
+            <span class="cue-number">${cue.number}</span>
+            <input type="text" class="cue-name-input" value="${escapeHtml(cue.name)}" onchange="updateCueName(${index}, this.value)">
+          </div>
+          <div class="cue-controls">
+            <button onclick="moveCue(${index}, -1)">▲</button>
+            <button onclick="moveCue(${index}, 1)">▼</button>
+            <select class="hotkey-select" onchange="setHotkey(${index}, this.value)">
+              ${hotkeyOptions}
+            </select>
+            ${controlsHtml}
+            <button onclick="removeCue(${index})" style="color: var(--danger)">✕</button>
+          </div>
         </div>
-        <div class="cue-controls">
-          <select class="hotkey-select" onchange="setHotkey(${index}, this.value)">
-            ${hotkeyOptions}
-          </select>
-          <label>Vol:</label>
-          <input type="range" min="0" max="1" step="0.05" value="${cue.volume}" 
-            onchange="updateVolume(${index}, this.value)">
-          <button onclick="playCue(${index})">Play</button>
-          <button class="btn-warning" onclick="fadeCue(${index})">Fade</button>
-          <button onclick="stopCue(${index})">Stop</button>
-          <button onclick="removeCue(${index})" style="color: var(--danger)">✕</button>
-        </div>
+        <input type="text" class="script-cue-input" placeholder="Add script prompt / stage note here..." value="${escapeHtml(cue.scriptCue)}" onchange="updateScriptCue(${index}, this.value)">
       `;
       
       cueListEl.appendChild(card);
     });
+  }
+
+  function escapeHtml(str) {
+    return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function updateCueName(index, val) {
+    if (cues[index]) {
+      cues[index].name = val;
+    }
+  }
+
+  function updateScriptCue(index, val) {
+    if (cues[index]) {
+      cues[index].scriptCue = val;
+    }
+  }
+
+  function updateWaitDuration(index, val) {
+    if (cues[index] && cues[index].type === 'wait') {
+      cues[index].duration = parseFloat(val) || 1;
+    }
+  }
+
+  function toggleAutoAdvance(index, checked) {
+    if (cues[index] && cues[index].type === 'audio') {
+      cues[index].autoAdvance = checked;
+    }
+  }
+
+  function moveCue(index, direction) {
+    const targetIndex = index + direction;
+    if (targetIndex >= 0 && targetIndex < cues.length) {
+      const temp = cues[index];
+      cues[index] = cues[targetIndex];
+      cues[targetIndex] = temp;
+      
+      if (currentCueIndex === index) {
+        currentCueIndex = targetIndex;
+      } else if (currentCueIndex === targetIndex) {
+        currentCueIndex = index;
+      }
+      
+      resequenceCues();
+      renderCues();
+    }
   }
 
   function setHotkey(index, val) {
@@ -323,21 +532,41 @@
   }
 
   function playCue(index) {
-    if (cues[index]) {
+    if (!cues[index]) return;
+
+    if (waitTimeout) {
+      clearTimeout(waitTimeout);
+      waitTimeout = null;
+    }
+
+    currentCueIndex = index;
+    renderCues();
+
+    const cue = cues[index];
+
+    if (cue.type === 'audio') {
       if (fadeIntervals[index]) {
         clearInterval(fadeIntervals[index]);
         delete fadeIntervals[index];
       }
-      cues[index].audio.currentTime = 0;
-      cues[index].audio.volume = cues[index].volume;
-      cues[index].audio.play();
-      currentCueIndex = index;
-      renderCues();
+      cue.audio.currentTime = 0;
+      cue.audio.volume = cue.volume;
+      cue.audio.play();
+    } else if (cue.type === 'wait') {
+      statusText.innerText = `Waiting ${cue.duration}s...`;
+      waitTimeout = setTimeout(() => {
+        statusText.innerText = "Ready";
+        if (currentCueIndex < cues.length - 1) {
+          currentCueIndex++;
+          renderCues();
+          playCurrentCue();
+        }
+      }, cue.duration * 1000);
     }
   }
 
   function fadeCue(index, duration = 2000) {
-    if (cues[index] && !cues[index].audio.paused) {
+    if (cues[index] && cues[index].type === 'audio' && !cues[index].audio.paused) {
       if (fadeIntervals[index]) {
         clearInterval(fadeIntervals[index]);
       }
@@ -367,7 +596,15 @@
   }
 
   function stopCue(index) {
-    if (cues[index]) {
+    if (!cues[index]) return;
+
+    if (waitTimeout) {
+      clearTimeout(waitTimeout);
+      waitTimeout = null;
+      statusText.innerText = "Ready";
+    }
+
+    if (cues[index].type === 'audio') {
       if (fadeIntervals[index]) {
         clearInterval(fadeIntervals[index]);
         delete fadeIntervals[index];
@@ -381,27 +618,31 @@
   function playCurrentCue() {
     if (cues.length > 0 && currentCueIndex < cues.length) {
       playCue(currentCueIndex);
-      if (currentCueIndex < cues.length - 1) {
-        currentCueIndex++;
-        setTimeout(renderCues, 100);
-      }
     }
   }
 
   function stopAll() {
+    if (waitTimeout) {
+      clearTimeout(waitTimeout);
+      waitTimeout = null;
+      statusText.innerText = "Ready";
+    }
+
     cues.forEach((cue, index) => {
       if (fadeIntervals[index]) {
         clearInterval(fadeIntervals[index]);
         delete fadeIntervals[index];
       }
-      cue.audio.pause();
-      cue.audio.currentTime = 0;
-      cue.audio.volume = cue.volume;
+      if (cue.type === 'audio') {
+        cue.audio.pause();
+        cue.audio.currentTime = 0;
+        cue.audio.volume = cue.volume;
+      }
     });
   }
 
   function updateVolume(index, val) {
-    if (cues[index]) {
+    if (cues[index] && cues[index].type === 'audio') {
       cues[index].volume = parseFloat(val);
       if (!fadeIntervals[index]) {
         cues[index].audio.volume = parseFloat(val);
@@ -415,6 +656,7 @@
     if (currentCueIndex >= cues.length) {
       currentCueIndex = Math.max(0, cues.length - 1);
     }
+    resequenceCues();
     renderCues();
   }
 
@@ -430,19 +672,34 @@
 
     for (let i = 0; i < cues.length; i++) {
       const cue = cues[i];
-      const audioPath = `audio/cue_${i}_${cue.fileName}`;
-      
-      zip.file(audioPath, cue.fileBlob);
 
-      metadata.push({
-        id: cue.id,
-        number: cue.number,
-        name: cue.name,
-        fileName: cue.fileName,
-        audioPath: audioPath,
-        volume: cue.volume,
-        hotkey: cue.hotkey || ''
-      });
+      if (cue.type === 'audio') {
+        const audioPath = `audio/cue_${i}_${cue.fileName}`;
+        zip.file(audioPath, cue.fileBlob);
+
+        metadata.push({
+          type: 'audio',
+          id: cue.id,
+          number: cue.number,
+          name: cue.name,
+          scriptCue: cue.scriptCue,
+          fileName: cue.fileName,
+          audioPath: audioPath,
+          volume: cue.volume,
+          hotkey: cue.hotkey || '',
+          autoAdvance: cue.autoAdvance || false
+        });
+      } else if (cue.type === 'wait') {
+        metadata.push({
+          type: 'wait',
+          id: cue.id,
+          number: cue.number,
+          name: cue.name,
+          scriptCue: cue.scriptCue,
+          duration: cue.duration,
+          hotkey: cue.hotkey || ''
+        });
+      }
     }
 
     zip.file("project.json", JSON.stringify({ cues: metadata }, null, 2));
@@ -477,24 +734,50 @@
       const projectData = JSON.parse(metadataText);
 
       for (const item of projectData.cues) {
-        const audioFile = zip.file(item.audioPath);
-        if (audioFile) {
-          const audioBlob = await audioFile.async("blob");
-          
+        if (item.type === 'audio') {
+          const audioFile = zip.file(item.audioPath);
+          if (audioFile) {
+            const audioBlob = await audioFile.async("blob");
+            const cue = {
+              type: 'audio',
+              id: item.id,
+              number: item.number,
+              name: item.name,
+              scriptCue: item.scriptCue || '',
+              fileName: item.fileName,
+              fileBlob: audioBlob,
+              audio: new Audio(URL.createObjectURL(audioBlob)),
+              volume: item.volume,
+              hotkey: item.hotkey || '',
+              autoAdvance: item.autoAdvance || false
+            };
+
+            cue.audio.addEventListener('ended', () => {
+              const cueIdx = cues.indexOf(cue);
+              if (cue.autoAdvance && cueIdx !== -1 && cueIdx < cues.length - 1) {
+                currentCueIndex = cueIdx + 1;
+                renderCues();
+                playCurrentCue();
+              }
+            });
+
+            cues.push(cue);
+          }
+        } else if (item.type === 'wait') {
           cues.push({
+            type: 'wait',
             id: item.id,
             number: item.number,
             name: item.name,
-            fileName: item.fileName,
-            fileBlob: audioBlob,
-            audio: new Audio(URL.createObjectURL(audioBlob)),
-            volume: item.volume,
+            scriptCue: item.scriptCue || '',
+            duration: item.duration || 3,
             hotkey: item.hotkey || ''
           });
         }
       }
 
       currentCueIndex = 0;
+      resequenceCues();
       renderCues();
       statusText.innerText = "Project Loaded!";
     } catch (err) {
@@ -507,7 +790,7 @@
   }
 
   document.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
     if (e.code === 'Space') {
       e.preventDefault();
