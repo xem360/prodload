@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prodload</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="sounds.js"></script>
   <style>
     :root {
       --bg-color: #121212;
@@ -387,9 +388,9 @@
       <button class="close-btn" onclick="toggleWhatsNew()">✕</button>
     </div>
     <ul>
-      <li><strong>Sound Library Integration:</strong> Pick royalty-free theater effects straight from the built-in cloud audio catalog.</li>
-      <li><strong>Reset GO Sequence:</strong> Spacebar trigger now starts execution from Q1 at the beginning of the show list.</li>
-      <li><strong>Continue From Here:</strong> Select any cue mid-show and resume execution using the new inline button.</li>
+      <li><strong>Serverless Sound Library:</strong> Now loads instantly offline via <code>sounds.js</code> without requiring a local web server.</li>
+      <li><strong>Reset GO Sequence:</strong> Spacebar trigger starts execution from Q1 at the beginning of the show list.</li>
+      <li><strong>Continue From Here:</strong> Select any cue mid-show and resume execution using the inline button.</li>
     </ul>
   </div>
 </div>
@@ -417,34 +418,6 @@
 </div>
 
 <script>
-  // Sample Frontend JSON SFX Database
-  const soundLibraryJSON = [
-    {
-      id: "sfx_thunder",
-      name: "Thunderclap & Rain",
-      desc: "Dramatic thunder roll suitable for stage storm cues.",
-      url: "https://actions.google.com/sounds/v1/weather/thunder_crack.ogg"
-    },
-    {
-      id: "sfx_doorbell",
-      name: "Classic Doorbell",
-      desc: "Two-tone chime prompt for stage entrances.",
-      url: "https://actions.google.com/sounds/v1/doors/doorbell_chime.ogg"
-    },
-    {
-      id: "sfx_applause",
-      name: "Theater Crowd Applause",
-      desc: "Medium audience clapping sound effect.",
-      url: "https://actions.google.com/sounds/v1/crowds/medium_group_cheer.ogg"
-    },
-    {
-      id: "sfx_phone",
-      name: "Vintage Telephone Ring",
-      desc: "Retro desk phone ringing sequence.",
-      url: "https://actions.google.com/sounds/v1/office/phone_ringing.ogg"
-    }
-  ];
-
   let cues = [];
   let currentCueIndex = 0;
   const fadeIntervals = {};
@@ -495,17 +468,23 @@
     const container = document.getElementById('libraryContainer');
     container.innerHTML = '';
 
-    soundLibraryJSON.forEach(item => {
+    if (typeof soundLibraryData === 'undefined' || !Array.isArray(soundLibraryData) || soundLibraryData.length === 0) {
+      container.innerHTML = '<p style="color: var(--danger); text-align: center;">Could not load sound library. Please make sure <code>sounds.js</code> is in the same folder.</p>';
+      document.getElementById('soundLibraryModal').style.display = 'flex';
+      return;
+    }
+
+    soundLibraryData.forEach(item => {
       const card = document.createElement('div');
       card.className = 'library-item';
       card.innerHTML = `
         <div onclick="selectLibraryItem('${item.id}')">
-          <div class="library-item-title">${item.name}</div>
-          <div class="library-item-desc">${item.desc}</div>
+          <div class="library-item-title">${escapeHtml(item.name)}</div>
+          <div class="library-item-desc">${escapeHtml(item.desc)}</div>
         </div>
         <div class="preview-drawer" id="drawer_${item.id}">
           <button class="preview-btn" id="pbtn_${item.id}" onclick="togglePreview('${item.id}', '${item.url}')">▶ Preview</button>
-          <button class="insert-btn" onclick="insertFromLibrary('${item.name}', '${item.url}')">⚡ Insert</button>
+          <button class="insert-btn" onclick="insertFromLibrary('${escapeHtml(item.name)}', '${item.url}')">⚡ Insert</button>
         </div>
       `;
       container.appendChild(card);
@@ -849,7 +828,7 @@
       }
       cues[index].audio.pause();
       cues[index].audio.currentTime = 0;
-      cues[index].audio.volume = cue.volume;
+      cues[index].audio.volume = cues[index].volume;
     }
   }
 
